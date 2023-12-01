@@ -3,17 +3,14 @@ import providers from '../providers/providers';
 import { createPactCommand, createSigningCommand, listen, localCommand, sendCommand } from '../utils/utils';
 import { create } from 'zustand';
 import walletConnectStore from './connectWalletModalSlice';
-import { X_WALLET, ZELCORE, WC } from "../providers/providers";
+import { X_WALLET, ZELCORE, WC, KOALA } from "../providers/providers";
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { toast } from 'react-toastify';
-import { devtools } from 'zustand/middleware';
 import Pact from 'pact-lang-api';
 import { balanceStore } from './BalStore';
 import { EVENT_WALLET_CONNECT } from '../constants/constants';
 import { useWalletConnection} from './wcStore';
-// import { set } from 'immer/dist/internal';
 
-const zelCore = ZELCORE;
 
 const kadenaStore = create((set, get) => ({
     messages: [],
@@ -23,12 +20,12 @@ const kadenaStore = create((set, get) => ({
     newTransaction: {},
     contractAccount: '',
     netInfo: {
-    contract: (import.meta.env.VITE_KU_NAMESPACE),
+    contract: import.meta.env.VITE_MARMALADE_V2,
     chainId: Number(import.meta.env.VITE_CHAIN_ID),
     gasPrice: Number(import.meta.env.VITE_GAS_PRICE),
     gasLimit: Number(import.meta.env.VITE_GAS_LIMIT),
-    network: 'https://api.chainweb.com',
-    networkId: 'mainnet01',
+    network: import.meta.env. VITE_KDA_NETWORK,
+    networkId: import.meta.env.VITE_NETWORK_ID,
     ttl: 600,
     },
     clearSession: () => set({}, true),
@@ -127,6 +124,8 @@ const kadenaStore = create((set, get) => ({
           setZelcore: () => set(() => ({ provider: ZELCORE })),
           setXWallet: () => set(() => ({ provider: X_WALLET })),
           setWC: () => set(() => ({ provider: WC })),
+          setKoala: () => set(() => ({ provider: KOALA })),
+
           clearProvider: () => set(() => ({ provider: null })),
         },
       }),
@@ -162,7 +161,6 @@ export const connectWithProvider = (providerId) => {
     try {
       if (providerId === 'WC') {
         connectResult = await useWalletConnection();
-        // console.log("connectResult", connectResult);
       } else {
         connectResult = await provider.connect(getState);
       }
@@ -362,15 +360,19 @@ export const getBalance = (chainId, pactCode) => {
   export const NETWORK = `${import.meta.env.VITE_KDA_NETWORK}/chainweb/${import.meta.env.VITE_KDA_NETWORK_VERSION}/${import.meta.env.VITE_NETWORK_ID}/chain/${import.meta.env.VITE_CHAIN_ID}/pact`;
  const creationTime = () => (Math.round(new Date().getTime() / 1000) - 10);
 //  console.log("creation time", creationTime());
-  export const pactFetchLocal = async (pactCode, options) => {
+  export const pactFetchLocal = async (pactCode, envData, options) => {
+    console.log('pactFetchLocal', pactCode, envData);
     let data = await Pact.fetch.local(
       {
         pactCode,
+        envData,
         meta: Pact.lang.mkMeta('', '1', Number(import.meta.env.VITE_GAS_PRICE), 150000, creationTime(), 600),
         ...options,
       },
       NETWORK
     );
+
+    // console.log('pactFetchLocal', data);
     if (data.result.status === 'success') {
       return data.result.data;
     } else if (data.result.error.message) {
