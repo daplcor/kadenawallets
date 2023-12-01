@@ -1,16 +1,17 @@
 import React, { useEffect, useRef } from "react";
-import { X_WALLET, ZELCORE, WC } from "../providers/providers";
+import { X_WALLET, ZELCORE, WC, KOALA } from "../providers/providers";
 import { connectWithProvider } from "../store/kadenaSlice";
-import kadenaStore, {accountStore} from "../store/kadenaSlice";
+import kadenaStore, { accountStore } from "../store/kadenaSlice";
 import walletConnectStore from "../store/connectWalletModalSlice";
-import "./wallet.css"; 
-import { useWalletConnect } from "../store/wcStore"; 
-import {Ecko, Zelcore, WalletConnect} from '../../../assets';
-
+import "./wallet.css";
+import { useWalletConnect } from "../store/wcStore";
+import Ecko from "../../../assets/ecko.svg?react";
+import Zelcore from "../../../assets/zelcore.svg?react";
+import WalletConnect from "../../../assets/walletconnect.svg?react";
+import Koala from "../../../assets/koalalogo.svg?react";
 
 function ConnectWalletModal(props) {
   const { handleConnect } = useWalletConnect();
-  
 
   const showModal = walletConnectStore((state) => state.showModal);
   const provider = kadenaStore((state) => state.provider);
@@ -23,18 +24,20 @@ function ConnectWalletModal(props) {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
       closeModal();
     }
-  }
+  };
 
-
-  const closeModal =  walletConnectStore((state) => state.sethideConnectWalletModal);
-
+  const closeModal = walletConnectStore(
+    (state) => state.sethideConnectWalletModal
+  );
 
   const connectXWalletClicked = connectWithProvider(X_WALLET);
   const connectZelcoreClicked = connectWithProvider(ZELCORE);
+  const connectKoalaClicked = connectWithProvider(KOALA);
+
   const connectWCClicked = connectWithProvider(WC);
   const handleWalletConnect = async () => {
-     handleConnect();
-     connectWithProvider(WC)
+    handleConnect();
+    connectWithProvider(WC);
   };
 
   // Add event listener when component mounts
@@ -48,7 +51,6 @@ function ConnectWalletModal(props) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showModal]); // Add showModal to dependency array to update listener when it changes
-
 
   useEffect(() => {
     if (props.onNewTransaction) {
@@ -67,30 +69,32 @@ function ConnectWalletModal(props) {
       props.onWalletConnected(provider);
     }
   }, [provider]);
-// console.log("provider", provider);
+  // console.log("provider", provider);
   if (!showModal) {
     return null;
   }
 
- 
-return (
-  <div className="modal" ref={modalRef} >
-    <div className="modal-container">
-      <div className="modal-header">
-        <span>Connect Wallet</span>
-        
+  return (
+    <div className="modal" ref={modalRef}>
+      <div className="modal-container">
+        <div className="modal-header">
+          <span>Connect Wallet</span>
+        </div>
+        <button className="modal-button" onClick={connectKoalaClicked}>
+          <Koala className="svglogos" /> Koala Wallet
+        </button>
+        <button className="modal-button" onClick={connectXWalletClicked}>
+          <Ecko className="svglogos" /> Ecko Wallet
+        </button>
+        <button className="modal-button" onClick={connectZelcoreClicked}>
+          <Zelcore className="svglogos" /> Zelcore
+        </button>
+
+        <button className="modal-button" onClick={handleWalletConnect}>
+          <WalletConnect className="svglogos" /> Wallet Connect
+        </button>
       </div>
-      <button className="modal-button" onClick={connectXWalletClicked}>
-       <Ecko className="svglogos" /> Ecko Wallet 
-      </button>
-      <button className="modal-button" onClick={connectZelcoreClicked}>
-      <Zelcore className="svglogos" />  Zelcore
-      </button>
-      <button className="modal-button" onClick={handleWalletConnect}>
-     <WalletConnect className="svglogos" /> Wallet Connect
-      </button>
-      </div>
-  </div>
-);
+    </div>
+  );
 }
 export default ConnectWalletModal;
